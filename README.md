@@ -141,6 +141,46 @@ Claude can access the following tools to interact with WhatsApp:
 - **send_audio_message**: Send an audio file as a WhatsApp voice message (requires the file to be an .ogg opus file or ffmpeg must be installed)
 - **download_media**: Download media from a WhatsApp message and get the local file path
 
+### Restricting access to specific chats (whitelist)
+
+By default the MCP server can read from and send to **any** chat in the local
+database. To limit Claude to a chosen set of conversations, add a whitelist.
+
+1. Discover the JIDs of the chats you want to allow (bridge must be running):
+
+   ```bash
+   cd whatsapp-mcp-server
+   uv run python admin_list_chats.py
+   ```
+
+2. Copy `whitelist.example.json` to `whitelist.json` and list only those JIDs:
+
+   ```json
+   { "allowed_jids": ["491701234567@s.whatsapp.net", "120363...@g.us"] }
+   ```
+
+   Individual chats end in `@s.whatsapp.net`, groups in `@g.us`.
+
+3. Restart the MCP server.
+
+Once `whitelist.json` exists, every read tool returns results **only** from
+whitelisted chats, and every send/download is refused for non-whitelisted
+recipients. The path can be overridden with the `WHATSAPP_WHITELIST_PATH`
+environment variable.
+
+**Opt-in, then fail closed.** The whitelist is *active* when either
+`whitelist.json` exists at the default path or `WHATSAPP_WHITELIST_PATH` is set:
+
+- **Not active** (no file, no env var) → access is unrestricted, exactly as
+  before this feature existed.
+- **Active** → enforcement applies, and if the whitelist is empty or malformed
+  it denies **everything** rather than silently opening up. So while it's
+  active, deleting or breaking the file locks access down; it never widens it.
+
+To restrict access, create `whitelist.json`. To return to unrestricted access,
+delete `whitelist.json` **and** unset `WHATSAPP_WHITELIST_PATH`. `whitelist.json`
+is gitignored so your private JIDs are never committed.
+
 ### Media Handling Features
 
 The MCP server supports both sending and receiving various media types:
