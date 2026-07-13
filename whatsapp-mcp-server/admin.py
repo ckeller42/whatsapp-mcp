@@ -14,6 +14,8 @@ Chat = Tuple[str, str, str]  # (jid, name, last_message_time)
 
 
 def _db_path(db_path: Optional[str]) -> str:
+    # Re-read the env here (not just whatsapp.MESSAGES_DB_PATH, which is fixed at
+    # import) so tests and callers can point at a different DB after import.
     return db_path or os.environ.get("WHATSAPP_MESSAGES_DB", whatsapp.MESSAGES_DB_PATH)
 
 
