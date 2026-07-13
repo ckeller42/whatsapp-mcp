@@ -44,6 +44,14 @@ Here's an example of what you can do when it's connected to Claude.
 
    The first time you run it, you will be prompted to scan a QR code. Scan the QR code with your WhatsApp mobile app to authenticate.
 
+   **Linking without scanning a QR (headless / remote):** set `WHATSAPP_PAIR_PHONE` to your number (country code, digits only) before starting the bridge. Instead of a QR it prints an 8-char code (`PAIR_CODE:...`) which you enter in WhatsApp via **Linked Devices → Link a device → "Link with phone number instead"**:
+
+   ```bash
+   WHATSAPP_PAIR_PHONE=491701234567 go run main.go
+   ```
+
+   The bridge also prints the raw QR payload as `QR_CODE_RAW:<code>` so tooling can render the QR itself (e.g. as an image) rather than relying on the terminal output.
+
    After approximately 20 days, you will might need to re-authenticate.
 
 3. **Connect to the MCP server**
@@ -119,6 +127,7 @@ This application consists of two main components:
 - All message history is stored in a SQLite database within the `whatsapp-bridge/store/` directory
 - The database maintains tables for chats and messages
 - Messages are indexed for efficient searching and retrieval
+- The MCP server reads `whatsapp-bridge/store/messages.db` by default; set `WHATSAPP_MESSAGES_DB` to point it at a different SQLite file
 
 ## Usage
 
