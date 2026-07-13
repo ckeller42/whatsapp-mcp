@@ -82,6 +82,39 @@ def is_allowed(recipient: Optional[str]) -> bool:
     return normalize_jid(recipient) in wl
 
 
+def _read_raw(path: str) -> List[str]:
+    """Return the raw allowed_jids list from the file, or [] on any error."""
+    try:
+        with open(path) as f:
+            return json.load(f).get("allowed_jids", [])
+    except (FileNotFoundError, json.JSONDecodeError, OSError, AttributeError, TypeError):
+        return []
+
+
+def save_allowed(jids, path: Optional[str] = None) -> frozenset:
+    """Write the whitelist: normalized, de-duplicated, sorted. Returns the set."""
+    path = path or _path()
+    norm = sorted({normalize_jid(j) for j in jids if normalize_jid(j)})
+    with open(path, "w") as f:
+        json.dump({"allowed_jids": norm}, f, indent=2)
+        f.write("\n")
+    return frozenset(norm)
+
+
+def add_jid(jid: str, path: Optional[str] = None) -> frozenset:
+    """Add a JID/phone to the whitelist (creating the file if needed)."""
+    path = path or _path()
+    return save_allowed(list(_read_raw(path)) + [jid], path)
+
+
+def remove_jid(jid: str, path: Optional[str] = None) -> frozenset:
+    """Remove a JID/phone from the whitelist; missing entries are a no-op."""
+    path = path or _path()
+    target = normalize_jid(jid)
+    kept = [j for j in _read_raw(path) if normalize_jid(j) != target]
+    return save_allowed(kept, path)
+
+
 def sql_filter(column: str) -> Tuple[str, List[str]]:
     """Return a ``(clause, params)`` restricting ``column`` to whitelisted JIDs.
 

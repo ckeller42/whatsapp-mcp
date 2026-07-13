@@ -155,22 +155,24 @@ Claude can access the following tools to interact with WhatsApp:
 By default the MCP server can read from and send to **any** chat in the local
 database. To limit Claude to a chosen set of conversations, add a whitelist.
 
-1. Discover the JIDs of the chats you want to allow (bridge must be running):
+The easiest way is the `whitelist_cli.py` helper (bridge must have synced):
 
-   ```bash
-   cd whatsapp-mcp-server
-   uv run python admin_list_chats.py
-   ```
+```bash
+cd whatsapp-mcp-server
+uv run python whitelist_cli.py chats            # list chats; [✓] = whitelisted
+uv run python whitelist_cli.py add "family"     # search by name, confirm, add
+uv run python whitelist_cli.py list             # show the current whitelist
+uv run python whitelist_cli.py remove "family"  # remove a chat
+```
 
-2. Copy `whitelist.example.json` to `whitelist.json` and list only those JIDs:
+`add` searches chat names and, on a single match, asks to confirm (use `-y` to
+skip). This writes `whitelist.json` for you.
 
-   ```json
-   { "allowed_jids": ["491701234567@s.whatsapp.net", "120363...@g.us"] }
-   ```
+Prefer to edit by hand? Copy `whitelist.example.json` to `whitelist.json` and
+list the JIDs directly (individual chats end in `@s.whatsapp.net`, groups in
+`@g.us`); run `uv run python admin_list_chats.py` to discover them.
 
-   Individual chats end in `@s.whatsapp.net`, groups in `@g.us`.
-
-3. Restart the MCP server.
+Either way, **restart the MCP server** afterwards for changes to take effect.
 
 Once `whitelist.json` exists, every read tool returns results **only** from
 whitelisted chats, and every send/download is refused for non-whitelisted
