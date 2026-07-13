@@ -170,7 +170,7 @@ skip). This writes `whitelist.json` for you.
 
 Prefer to edit by hand? Copy `whitelist.example.json` to `whitelist.json` and
 list the JIDs directly (individual chats end in `@s.whatsapp.net`, groups in
-`@g.us`); run `uv run python admin_list_chats.py` to discover them.
+`@g.us`); run `uv run python whitelist_cli.py chats` to discover them.
 
 Either way, **restart the MCP server** afterwards for changes to take effect.
 
@@ -191,6 +191,11 @@ environment variable.
 To restrict access, create `whitelist.json`. To return to unrestricted access,
 delete `whitelist.json` **and** unset `WHATSAPP_WHITELIST_PATH`. `whitelist.json`
 is gitignored so your private JIDs are never committed.
+
+> **Note:** the whitelist is enforced in the MCP server only. The Go bridge's
+> local HTTP API (`localhost:8080`) is unauthenticated and not whitelist-aware,
+> so anything able to reach that port can send/read directly. Keep it bound to
+> localhost and don't expose it.
 
 ### Media Handling Features
 

@@ -1,5 +1,5 @@
 *.db
 claude_desktop_config.json
 whatsapp.log
-# agent-deck writes local MCP config here
+# local per-machine MCP client config
 .mcp.json

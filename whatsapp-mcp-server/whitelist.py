@@ -86,7 +86,8 @@ def _read_raw(path: str) -> List[str]:
     """Return the raw allowed_jids list from the file, or [] on any error."""
     try:
         with open(path) as f:
-            return json.load(f).get("allowed_jids", [])
+            jids = json.load(f).get("allowed_jids", [])
+        return jids if isinstance(jids, list) else []
     except (FileNotFoundError, json.JSONDecodeError, OSError, AttributeError, TypeError):
         return []
 
@@ -94,7 +95,7 @@ def _read_raw(path: str) -> List[str]:
 def save_allowed(jids, path: Optional[str] = None) -> frozenset:
     """Write the whitelist: normalized, de-duplicated, sorted. Returns the set."""
     path = path or _path()
-    norm = sorted({normalize_jid(j) for j in jids if normalize_jid(j)})
+    norm = sorted({n for n in (normalize_jid(j) for j in jids) if n})
     with open(path, "w") as f:
         json.dump({"allowed_jids": norm}, f, indent=2)
         f.write("\n")
@@ -104,7 +105,7 @@ def save_allowed(jids, path: Optional[str] = None) -> frozenset:
 def add_jid(jid: str, path: Optional[str] = None) -> frozenset:
     """Add a JID/phone to the whitelist (creating the file if needed)."""
     path = path or _path()
-    return save_allowed(list(_read_raw(path)) + [jid], path)
+    return save_allowed(_read_raw(path) + [jid], path)
 
 
 def remove_jid(jid: str, path: Optional[str] = None) -> frozenset:
