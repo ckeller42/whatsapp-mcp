@@ -89,6 +89,53 @@ def test_is_allowed_false_when_file_malformed(wl_file):
     assert whitelist.is_allowed("491701234567@s.whatsapp.net") is False
 
 
+# --- editing: add_jid / remove_jid / save_allowed -------------------------
+
+def test_add_jid_creates_file_with_normalized_jid(wl_file):
+    _, path = wl_file
+    result = whitelist.add_jid("+49 170 1234567")
+    assert result == frozenset({"491701234567@s.whatsapp.net"})
+    assert json.loads(path.read_text())["allowed_jids"] == ["491701234567@s.whatsapp.net"]
+
+
+def test_add_jid_is_idempotent(wl_file):
+    write, path = wl_file
+    write(["120363111@g.us"])
+    whitelist.add_jid("120363111@g.us")
+    assert json.loads(path.read_text())["allowed_jids"] == ["120363111@g.us"]
+
+
+def test_add_jid_appends_to_existing(wl_file):
+    write, path = wl_file
+    write(["120363111@g.us"])
+    result = whitelist.add_jid("491701234567@s.whatsapp.net")
+    assert result == frozenset({"120363111@g.us", "491701234567@s.whatsapp.net"})
+
+
+def test_remove_jid_drops_entry(wl_file):
+    write, path = wl_file
+    write(["120363111@g.us", "491701234567@s.whatsapp.net"])
+    result = whitelist.remove_jid("491701234567@s.whatsapp.net")
+    assert result == frozenset({"120363111@g.us"})
+    assert json.loads(path.read_text())["allowed_jids"] == ["120363111@g.us"]
+
+
+def test_remove_jid_missing_is_noop(wl_file):
+    write, path = wl_file
+    write(["120363111@g.us"])
+    result = whitelist.remove_jid("999@s.whatsapp.net")
+    assert result == frozenset({"120363111@g.us"})
+
+
+def test_save_allowed_dedupes_and_sorts(wl_file):
+    _, path = wl_file
+    whitelist.save_allowed(["491701234567@s.whatsapp.net", "120363111@g.us", "491701234567@s.whatsapp.net"])
+    assert json.loads(path.read_text())["allowed_jids"] == [
+        "120363111@g.us",
+        "491701234567@s.whatsapp.net",
+    ]
+
+
 # --- opt-in: unrestricted only when NOTHING is configured -----------------
 
 def test_unrestricted_when_no_whitelist_configured(tmp_path, monkeypatch):
