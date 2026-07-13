@@ -3,3 +3,6 @@ claude_desktop_config.json
 whatsapp.log
 # local per-machine MCP client config
 .mcp.json
+
+# compiled bridge binary
+whatsapp-bridge/whatsapp-bridge

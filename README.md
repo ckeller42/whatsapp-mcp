@@ -92,6 +92,34 @@ Here's an example of what you can do when it's connected to Claude.
 
    Or restart Cursor.
 
+### Running the bridge as a background service (macOS)
+
+Instead of keeping `go run .` open in a terminal, you can run the bridge as a
+`launchd` LaunchAgent so it starts at login and restarts if it crashes.
+
+```bash
+cd whatsapp-bridge
+go build -o whatsapp-bridge .          # compile the binary once
+
+# edit the example: replace /ABSOLUTE/PATH/TO with this repo's path
+cp com.whatsapp-mcp.bridge.plist.example ~/Library/LaunchAgents/com.whatsapp-mcp.bridge.plist
+$EDITOR ~/Library/LaunchAgents/com.whatsapp-mcp.bridge.plist
+
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.whatsapp-mcp.bridge.plist
+```
+
+Manage it with:
+
+```bash
+launchctl kickstart -k gui/$(id -u)/com.whatsapp-mcp.bridge   # restart (e.g. after rebuilding)
+launchctl bootout     gui/$(id -u)/com.whatsapp-mcp.bridge    # stop / uninstall
+tail -f /tmp/whatsapp-mcp-bridge.log                          # logs
+```
+
+Link WhatsApp once via a manual `go run .` (scan the QR) before relying on the
+service; it then reconnects automatically with the saved session. If the device
+is unlinked later, the log will show a QR prompt and you'll need to re-link.
+
 ### Windows Compatibility
 
 If you're running this project on Windows, be aware that `go-sqlite3` requires **CGO to be enabled** in order to compile and work properly. By default, **CGO is disabled on Windows**, so you need to explicitly enable it and have a C compiler installed.
