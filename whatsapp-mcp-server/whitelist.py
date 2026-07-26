@@ -63,7 +63,9 @@ def load_whitelist() -> frozenset:
         with open(_path()) as f:
             data = json.load(f)
         jids = data.get("allowed_jids", [])
-        return frozenset(normalize_jid(j) for j in jids if j)
+        # Filter on the normalized value so a truthy-but-empty entry (e.g. "   ")
+        # can't slip "" into the set and make is_allowed("") true.
+        return frozenset(n for n in (normalize_jid(j) for j in jids) if n)
     except (FileNotFoundError, json.JSONDecodeError, OSError, AttributeError, TypeError):
         return frozenset()
 
