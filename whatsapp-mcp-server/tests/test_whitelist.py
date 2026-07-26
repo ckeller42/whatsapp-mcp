@@ -89,6 +89,15 @@ def test_is_allowed_false_when_file_malformed(wl_file):
     assert whitelist.is_allowed("491701234567@s.whatsapp.net") is False
 
 
+def test_whitespace_entry_does_not_allow_empty_recipient(wl_file):
+    # A truthy-but-empty entry ("   ") normalizes to "" and must not slip into
+    # the set, or is_allowed("")/is_allowed(None) would wrongly return True.
+    write, _ = wl_file
+    write(["   "])
+    assert whitelist.is_allowed("") is False
+    assert whitelist.is_allowed(None) is False
+
+
 # --- editing: add_jid / remove_jid / save_allowed -------------------------
 
 def test_add_jid_creates_file_with_normalized_jid(wl_file):
