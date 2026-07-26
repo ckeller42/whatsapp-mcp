@@ -23,7 +23,9 @@ def _kind(jid: str) -> str:
 
 
 def _name_map() -> dict:
-    return {jid: name for jid, name, _ in admin.all_chats()}
+    # Key by normalized JID so lookups from the (normalized) whitelist match
+    # regardless of how the raw JID was cased in the database.
+    return {whitelist.normalize_jid(jid): name for jid, name, _ in admin.all_chats()}
 
 
 def _print_candidates(rows) -> None:
@@ -86,10 +88,9 @@ def _cmd_remove(query: str, yes: bool) -> int:
         return 2
     jid = matches[0]
     name = names.get(jid, "?")
-    if not yes and sys.stdin.isatty():
-        if input(f"Remove {name} ({jid})? [y/N] ").strip().lower() != "y":
-            print("Cancelled.")
-            return 1
+    if not yes and sys.stdin.isatty() and input(f"Remove {name} ({jid})? [y/N] ").strip().lower() != "y":
+        print("Cancelled.")
+        return 1
     whitelist.remove_jid(jid)
     print(f"✓ removed {name} ({jid})")
     print(RELOAD_HINT)
