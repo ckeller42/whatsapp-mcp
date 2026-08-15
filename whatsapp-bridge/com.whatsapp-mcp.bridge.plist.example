@@ -38,9 +38,13 @@
     <key>ThrottleInterval</key>
     <integer>10</integer>
 
+    <!-- The bridge logs full message content to stdout. Keep the log in your
+         home directory (0700 by default), NOT /tmp, where it would be readable
+         by every user on the machine. launchd does not expand ~, so replace
+         /ABSOLUTE/HOME with your home directory (e.g. /Users/yourname). -->
     <key>StandardOutPath</key>
-    <string>/tmp/whatsapp-mcp-bridge.log</string>
+    <string>/ABSOLUTE/HOME/Library/Logs/whatsapp-mcp-bridge.log</string>
     <key>StandardErrorPath</key>
-    <string>/tmp/whatsapp-mcp-bridge.log</string>
+    <string>/ABSOLUTE/HOME/Library/Logs/whatsapp-mcp-bridge.log</string>
 </dict>
 </plist>
