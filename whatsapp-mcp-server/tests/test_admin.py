@@ -16,7 +16,7 @@ def db(tmp_path):
     conn.executemany(
         "INSERT INTO chats VALUES (?,?,?)",
         [
-            ("120363111@g.us", "Wanderwochenende", "2026-01-03T10:00:00"),
+            ("120363111@g.us", "Hiking Group", "2026-01-03T10:00:00"),
             ("491701@s.whatsapp.net", "Anna", "2026-01-02T10:00:00"),
             ("491702@s.whatsapp.net", "Bob", "2026-01-01T10:00:00"),
         ],
@@ -33,11 +33,11 @@ def test_all_chats_returns_everything(db):
 
 def test_all_chats_sorted_by_recency(db):
     rows = admin.all_chats(db_path=db)
-    assert [r[1] for r in rows] == ["Wanderwochenende", "Anna", "Bob"]
+    assert [r[1] for r in rows] == ["Hiking Group", "Anna", "Bob"]
 
 
 def test_find_chats_filters_by_name_case_insensitive(db):
-    rows = admin.find_chats("wander", db_path=db)
+    rows = admin.find_chats("hiking", db_path=db)
     assert [r[0] for r in rows] == ["120363111@g.us"]
 
 

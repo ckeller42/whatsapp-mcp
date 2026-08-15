@@ -5,8 +5,8 @@
     uv run python whitelist_cli.py remove <name>   # remove from whitelist
     uv run python whitelist_cli.py list            # show current whitelist
 
-Changes are written to whitelist.json (see whitelist.example.json). They take
-effect the next time your MCP client / server restarts.
+Changes are written to whitelist.json (see whitelist.example.json). The server
+re-reads the file on every request, so changes take effect immediately.
 """
 import argparse
 import sys
@@ -15,7 +15,7 @@ from typing import List, Optional
 import admin
 import whitelist
 
-RELOAD_HINT = "→ Restart your MCP client for the change to take effect."
+RELOAD_HINT = "→ Change takes effect on the next request; no restart needed."
 
 
 def _kind(jid: str) -> str:

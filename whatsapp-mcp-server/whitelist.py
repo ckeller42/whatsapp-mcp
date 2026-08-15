@@ -60,13 +60,14 @@ def load_whitelist() -> frozenset:
     request without restarting; the file is tiny so the cost is negligible.
     """
     try:
-        with open(_path()) as f:
-            data = json.load(f)
-        jids = data.get("allowed_jids", [])
+        # _read_raw guards against a non-list allowed_jids (e.g. a bare string,
+        # which would otherwise iterate per-character into bogus entries).
+        jids = _read_raw(_path())
         # Filter on the normalized value so a truthy-but-empty entry (e.g. "   ")
         # can't slip "" into the set and make is_allowed("") true.
         return frozenset(n for n in (normalize_jid(j) for j in jids) if n)
-    except (FileNotFoundError, json.JSONDecodeError, OSError, AttributeError, TypeError):
+    except (AttributeError, TypeError):
+        # Non-string entries (e.g. a bare number) fail normalization: deny all.
         return frozenset()
 
 

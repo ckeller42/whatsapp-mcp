@@ -113,8 +113,12 @@ Manage it with:
 ```bash
 launchctl kickstart -k gui/$(id -u)/com.whatsapp-mcp.bridge   # restart (e.g. after rebuilding)
 launchctl bootout     gui/$(id -u)/com.whatsapp-mcp.bridge    # stop / uninstall
-tail -f /tmp/whatsapp-mcp-bridge.log                          # logs
+tail -f ~/Library/Logs/whatsapp-mcp-bridge.log                # logs
 ```
+
+> **Note:** the bridge logs full message content to its log file. Keep the log
+> inside your home directory (as the example plist does) — a log in `/tmp`
+> would be readable by every user on the machine.
 
 Link WhatsApp once via a manual `go run .` (scan the QR) before relying on the
 service; it then reconnects automatically with the saved session. If the device
@@ -200,7 +204,8 @@ Prefer to edit by hand? Copy `whitelist.example.json` to `whitelist.json` and
 list the JIDs directly (individual chats end in `@s.whatsapp.net`, groups in
 `@g.us`); run `uv run python whitelist_cli.py chats` to discover them.
 
-Either way, **restart the MCP server** afterwards for changes to take effect.
+Either way, changes take effect immediately — the server re-reads
+`whitelist.json` on every request; no restart needed.
 
 Once `whitelist.json` exists, every read tool returns results **only** from
 whitelisted chats, and every send/download is refused for non-whitelisted

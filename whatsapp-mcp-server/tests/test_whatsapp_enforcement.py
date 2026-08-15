@@ -143,6 +143,22 @@ def test_send_message_allowed_for_whitelisted_group(capture_post):
     assert len(capture_post) == 1
 
 
+def test_send_file_blocked_for_non_whitelisted(capture_post, tmp_path):
+    media = tmp_path / "photo.jpg"
+    media.write_bytes(b"fake")
+    ok, _ = whatsapp.send_file(BOB, str(media))
+    assert ok is False
+    assert capture_post == []
+
+
+def test_send_audio_message_blocked_for_non_whitelisted(capture_post, tmp_path):
+    media = tmp_path / "voice.ogg"
+    media.write_bytes(b"fake")
+    ok, _ = whatsapp.send_audio_message(BOB, str(media))
+    assert ok is False
+    assert capture_post == []
+
+
 def test_download_media_blocked_for_non_whitelisted(capture_post):
     assert whatsapp.download_media("m_bob", BOB) is None
     assert capture_post == []
