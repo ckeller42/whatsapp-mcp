@@ -119,6 +119,7 @@ This application consists of two main components:
 - All message history is stored in a SQLite database within the `whatsapp-bridge/store/` directory
 - The database maintains tables for chats and messages
 - Messages are indexed for efficient searching and retrieval
+- The MCP server reads `whatsapp-bridge/store/messages.db` by default; set `WHATSAPP_MESSAGES_DB` to point it at a different SQLite file
 
 ## Usage
 
@@ -163,7 +164,8 @@ Prefer to edit by hand? Copy `whitelist.example.json` to `whitelist.json` and
 list the JIDs directly (individual chats end in `@s.whatsapp.net`, groups in
 `@g.us`); run `uv run python whitelist_cli.py chats` to discover them.
 
-Either way, **restart the MCP server** afterwards for changes to take effect.
+Either way, changes take effect immediately — the server re-reads
+`whitelist.json` on every request; no restart needed.
 
 Once `whitelist.json` exists, every read tool returns results **only** from
 whitelisted chats, and every send/download is refused for non-whitelisted

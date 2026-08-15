@@ -89,6 +89,25 @@ def test_is_allowed_false_when_file_malformed(wl_file):
     assert whitelist.is_allowed("491701234567@s.whatsapp.net") is False
 
 
+def test_non_list_allowed_jids_denies_all(wl_file):
+    # A string would iterate per-character into bogus single-digit entries;
+    # any non-list type must deny everything, matching "malformed = deny".
+    _, path = wl_file
+    path.write_text(json.dumps({"allowed_jids": "491701234567@s.whatsapp.net"}))
+    assert whitelist.is_allowed("491701234567@s.whatsapp.net") is False
+    assert whitelist.is_allowed("4") is False
+    assert whitelist.load_whitelist() == frozenset()
+
+
+def test_non_string_entry_denies_all(wl_file):
+    # A bare number in the list (easy hand-edit mistake) must fail closed,
+    # not raise out of load_whitelist.
+    _, path = wl_file
+    path.write_text(json.dumps({"allowed_jids": [123]}))
+    assert whitelist.is_allowed("123@s.whatsapp.net") is False
+    assert whitelist.load_whitelist() == frozenset()
+
+
 def test_whitespace_entry_does_not_allow_empty_recipient(wl_file):
     # A truthy-but-empty entry ("   ") normalizes to "" and must not slip into
     # the set, or is_allowed("")/is_allowed(None) would wrongly return True.
