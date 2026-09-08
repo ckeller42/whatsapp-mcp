@@ -339,18 +339,32 @@ def list_chats(
         conn = sqlite3.connect(MESSAGES_DB_PATH)
         cursor = conn.cursor()
         
-        # Build base query
-        query_parts = ["""
-            SELECT 
-                chats.jid,
-                chats.name,
-                chats.last_message_time,
+        # The last-message columns are only selectable when the messages table
+        # is joined; substitute NULL placeholders otherwise so the column count
+        # and order stay the same for the Chat construction below.
+        if include_last_message:
+            last_message_columns = """
                 messages.content as last_message,
                 messages.sender as last_sender,
                 messages.is_from_me as last_is_from_me
+            """
+        else:
+            last_message_columns = """
+                NULL as last_message,
+                NULL as last_sender,
+                NULL as last_is_from_me
+            """
+
+        # Build base query
+        query_parts = [f"""
+            SELECT
+                chats.jid,
+                chats.name,
+                chats.last_message_time,
+                {last_message_columns}
             FROM chats
         """]
-        
+
         if include_last_message:
             query_parts.append("""
                 LEFT JOIN messages ON chats.jid = messages.chat_jid 
@@ -558,17 +572,30 @@ def get_chat(chat_jid: str, include_last_message: bool = True) -> Optional[Chat]
         conn = sqlite3.connect(MESSAGES_DB_PATH)
         cursor = conn.cursor()
         
-        query = """
-            SELECT 
-                c.jid,
-                c.name,
-                c.last_message_time,
+        # See list_chats: the last-message columns require the join, so fall
+        # back to NULL placeholders when it is omitted.
+        if include_last_message:
+            last_message_columns = """
                 m.content as last_message,
                 m.sender as last_sender,
                 m.is_from_me as last_is_from_me
+            """
+        else:
+            last_message_columns = """
+                NULL as last_message,
+                NULL as last_sender,
+                NULL as last_is_from_me
+            """
+
+        query = f"""
+            SELECT
+                c.jid,
+                c.name,
+                c.last_message_time,
+                {last_message_columns}
             FROM chats c
         """
-        
+
         if include_last_message:
             query += """
                 LEFT JOIN messages m ON c.jid = m.chat_jid 

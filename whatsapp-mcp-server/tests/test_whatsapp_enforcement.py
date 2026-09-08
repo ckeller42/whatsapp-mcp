@@ -172,3 +172,26 @@ def test_fail_closed_when_whitelist_file_missing(monkeypatch, capture_post, tmp_
     ok, _ = whatsapp.send_message(ALICE, "hi")   # even a normally-allowed JID
     assert ok is False
     assert capture_post == []
+
+
+# --- include_last_message=False must still work, and still be gated -------
+
+def test_list_chats_without_last_message_returns_chats():
+    chats = whatsapp.list_chats(include_last_message=False)
+    assert {c.jid for c in chats} == {ALICE, GROUP}
+    assert all(c.last_message is None for c in chats)
+
+
+def test_list_chats_without_last_message_excludes_non_whitelisted():
+    assert BOB not in {c.jid for c in whatsapp.list_chats(include_last_message=False)}
+
+
+def test_get_chat_without_last_message_returns_chat():
+    chat = whatsapp.get_chat(ALICE, include_last_message=False)
+    assert chat is not None
+    assert chat.jid == ALICE
+    assert chat.last_message is None
+
+
+def test_get_chat_without_last_message_returns_none_for_non_whitelisted():
+    assert whatsapp.get_chat(BOB, include_last_message=False) is None
