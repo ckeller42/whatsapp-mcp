@@ -6,3 +6,6 @@ whatsapp.log
 
 # compiled bridge binary
 whatsapp-bridge/whatsapp-bridge
+
+# binary from `go build ./...` (module name)
+whatsapp-bridge/whatsapp-client
