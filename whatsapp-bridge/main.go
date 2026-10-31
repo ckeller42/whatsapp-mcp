@@ -185,8 +185,34 @@ func extractTextContent(msg *waProto.Message) string {
 		return extendedText.GetText()
 	}
 
-	// For now, we're ignoring non-text messages
+	// A poll can arrive wrapped in any of these three fields depending on the
+	// sender's WhatsApp client version; all three carry the same shape.
+	if poll := msg.GetPollCreationMessage(); poll != nil {
+		return formatPoll(poll)
+	} else if poll := msg.GetPollCreationMessageV2(); poll != nil {
+		return formatPoll(poll)
+	} else if poll := msg.GetPollCreationMessageV3(); poll != nil {
+		return formatPoll(poll)
+	}
+
+	// For now, we're ignoring other non-text messages
 	return ""
+}
+
+// formatPoll renders a poll's question and options as readable text, e.g.:
+//
+//	[Poll] Jahresauftakt-Treffen 2027, München
+//	- 16.1./17.1.2027
+//	- 23.1./24.1.2027
+func formatPoll(poll *waProto.PollCreationMessage) string {
+	var b strings.Builder
+	b.WriteString("[Poll] ")
+	b.WriteString(poll.GetName())
+	for _, option := range poll.GetOptions() {
+		b.WriteString("\n- ")
+		b.WriteString(option.GetOptionName())
+	}
+	return b.String()
 }
 
 // SendMessageResponse represents the response for the send message API
